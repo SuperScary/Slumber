@@ -1,0 +1,13 @@
+{
+  "itemGroup.slumber": "Example Mod Tab",
+  "block.slumber.example_block": "Example Block",
+  "item.slumber.example_item": "Example Item",
+
+  "slumber.configuration.title": "Slumber Configs",
+  "slumber.configuration.section.slumber.common.toml": "Slumber Configs",
+  "slumber.configuration.section.slumber.common.toml.title": "Slumber Configs",
+  "slumber.configuration.items": "Item List",
+  "slumber.configuration.logDirtBlock": "Log Dirt Block",
+  "slumber.configuration.magicNumberIntroduction": "Magic Number Text",
+  "slumber.configuration.magicNumber": "Magic Number"
+}
