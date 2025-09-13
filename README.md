@@ -1,4 +1,4 @@
-# Slumber (NeoForge 1.21.8)
+# Slumber
 
 Sleep with progress. Slumber accelerates the entire server tick while everyone sleeps — not just time-of-day. Blocks, entities, block entities, random ticks, scheduled updates, weather, raids… everything advances across all dimensions during sleep.
 
