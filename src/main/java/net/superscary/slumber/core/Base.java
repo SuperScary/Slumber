@@ -17,7 +17,7 @@ public abstract class Base implements Slumber {
 
     static Slumber INSTANCE;
 
-    public Base (ModContainer container, IEventBus modEventBus) {
+    public Base(ModContainer container, IEventBus modEventBus) {
         if (INSTANCE != null) {
             throw new IllegalStateException();
         }
@@ -30,7 +30,7 @@ public abstract class Base implements Slumber {
     }
 
     @Override
-    public Collection<ServerPlayer> getPlayers () {
+    public Collection<ServerPlayer> getPlayers() {
         var server = getCurrentServer();
         if (server != null) {
             return server.getPlayerList().getPlayers();
@@ -41,7 +41,7 @@ public abstract class Base implements Slumber {
 
     @Nullable
     @Override
-    public MinecraftServer getCurrentServer () {
+    public MinecraftServer getCurrentServer() {
         return ServerLifecycleHooks.getCurrentServer();
     }
 

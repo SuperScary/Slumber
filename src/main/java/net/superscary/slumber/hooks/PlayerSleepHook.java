@@ -16,8 +16,19 @@ public class PlayerSleepHook {
 
     @SubscribeEvent
     public void onServerTick(final ServerTickEvent.Post event) {
+        simulateWorld(event);
+        healWhenSleeping(event);
+    }
+
+    /**
+     * Simulate extra world ticks when all players are sleeping, based on the
+     * SLUMBER_TICK_MULTIPLIER gamerule.
+     * @param event
+     */
+    private void simulateWorld(final ServerTickEvent.Post event) {
         final MinecraftServer server = Slumber.instance().getCurrentServer();
-        if (server == null) return;
+        if (server == null)
+            return;
 
         final boolean allSleeping = areAllNonSpectatorsSleeping(server);
 
@@ -38,33 +49,71 @@ public class PlayerSleepHook {
             }
         }
 
-        if (!sleepingActive) return;
+        if (!sleepingActive)
+            return;
 
         // Determine multiplier from gamerule. Minimum 1 (no acceleration).
-        int multiplier = Math.max(1, server.overworld().getGameRules().getInt(SlumberGameRules.SLUMBER_TICK_MULTIPLIER));
+        int multiplier = Math.max(1,
+                server.overworld().getGameRules().getInt(SlumberGameRules.SLUMBER_TICK_MULTIPLIER));
         int extraTicks = multiplier - 1;
 
-        // Run extra full world ticks so that blocks, entities, schedulers, etc. all progress.
+        // Run extra full world ticks so that blocks, entities, schedulers, etc. all
+        // progress.
         for (int i = 0; i < extraTicks; i++) {
             for (ServerLevel level : server.getAllLevels()) {
                 level.tick(() -> true);
             }
         }
 
-        // If it has become day in the overworld, allow vanilla to wake players by restoring the threshold.
+        // If it has become day in the overworld, allow vanilla to wake players by
+        // restoring the threshold.
         if (server.overworld().getGameTime() >= server.overworld().getDayTime() && originalSleepingPercent >= 0) {
             setPlayersSleepingPercentAllLevels(server, originalSleepingPercent);
             originalSleepingPercent = -1;
         }
     }
 
+    /**
+     * Heal sleeping players by 1 health point (half a heart) each tick when all
+     * players are sleeping, if the HEAL_WHEN_SLEEPING gamerule is enabled.
+     * 
+     * * We should calculate healing time based on player actual sleep time and the time
+     * * it takes to heal naturally, this just adds 1 health per tick. 
+     * @param event
+     */
+    private void healWhenSleeping(final ServerTickEvent.Post event) {
+        final MinecraftServer server = Slumber.instance().getCurrentServer();
+        if (server == null)
+            return;
+
+        final boolean allSleeping = areAllNonSpectatorsSleeping(server);
+
+        if (!allSleeping)
+            return;
+
+        boolean healWhenSleeping = server.overworld().getGameRules().getBoolean(SlumberGameRules.HEAL_WHEN_SLEEPING);
+        boolean hungerWhenHealing = server.overworld().getGameRules().getBoolean(SlumberGameRules.HUNGER_WHEN_HEALING);
+        if (!healWhenSleeping)
+            return;
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.isSleeping()) {
+                player.heal(1.0F);
+                // TODO: configurable hunger cost. 
+                // ! This is experimental.
+                if (hungerWhenHealing) player.causeFoodExhaustion(0.005F);
+            }
+        }
+    }
+    
     private static boolean areAllNonSpectatorsSleeping(MinecraftServer server) {
         var players = server.getPlayerList().getPlayers();
         int active = 0;
         for (ServerPlayer p : players) {
             if (!p.isSpectator()) {
                 active++;
-                if (!p.isSleeping()) return false;
+                if (!p.isSleeping())
+                    return false;
             }
         }
         return active > 0;
