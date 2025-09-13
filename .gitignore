@@ -28,5 +28,4 @@ repo
 .gradle/
 .vscode/
 build/
-gradle/
 run/
