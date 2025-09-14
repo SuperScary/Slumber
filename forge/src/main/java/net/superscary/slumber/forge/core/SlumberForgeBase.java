@@ -2,12 +2,10 @@ package net.superscary.slumber.forge.core;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import net.superscary.slumber.CommonClass;
 import net.superscary.slumber.ModBase;
 import net.superscary.slumber.SlumberGameRules;
-import net.superscary.slumber.forge.hooks.PlayerSleepHook;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class SlumberForgeBase extends ModBase {
@@ -19,7 +17,6 @@ public abstract class SlumberForgeBase extends ModBase {
         SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules
                 .register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
 
-        MinecraftForge.EVENT_BUS.register(new PlayerSleepHook());
     }
 
     @Nullable
