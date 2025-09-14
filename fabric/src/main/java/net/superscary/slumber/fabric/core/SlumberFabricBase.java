@@ -24,16 +24,6 @@ public abstract class SlumberFabricBase extends ModBase {
                 GameRules.Category.UPDATES,
                 GameRules.IntegerValue.create(20)
         );
-        SlumberGameRules.HEAL_WHEN_SLEEPING = GameRules.register(
-                "slumberHealWhenSleeping",
-                GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(false)
-        );
-        SlumberGameRules.HUNGER_WHEN_HEALING = GameRules.register(
-                "slumberHungerWhenHealing",
-                GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(false)
-        );
 
         // Track current server lifecycle for common access
         ServerLifecycleEvents.SERVER_STARTED.register(server -> this.currentServer = server);
@@ -42,7 +32,6 @@ public abstract class SlumberFabricBase extends ModBase {
         // Run simulation each server tick
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             Simulator.simulateWorld();
-            Simulator.healWhenSleeping();
         });
     }
 

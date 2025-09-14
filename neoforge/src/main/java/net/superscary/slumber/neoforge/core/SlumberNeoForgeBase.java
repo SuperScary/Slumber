@@ -20,10 +20,6 @@ public abstract class SlumberNeoForgeBase extends ModBase {
 
         SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules
                 .register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
-        SlumberGameRules.HEAL_WHEN_SLEEPING = GameRules
-                .register("slumberHealWhenSleeping", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
-        SlumberGameRules.HUNGER_WHEN_HEALING = GameRules
-                .register("slumberHungerWhenHealing", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
 
         NeoForge.EVENT_BUS.register(new PlayerSleepHook());
     }

@@ -9,7 +9,6 @@ public class PlayerSleepHook {
     @SubscribeEvent
     public void onServerTick(final TickEvent.ServerTickEvent.Post event) {
         Simulator.simulateWorld();
-        Simulator.healWhenSleeping();
     }
 
 }
