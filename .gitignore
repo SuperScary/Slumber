@@ -11,7 +11,8 @@ out
 *.ipr
 *.iws
 *.iml
-.idea
+.idea/*
+!.idea/scopes
 
 # gradle
 build
@@ -21,11 +22,8 @@ build
 eclipse
 run
 runs
-run-data
 
-repo
-
-.gradle/
-.vscode/
-build/
-run/
+buildSrc/.gradle
+buildSrc/build
+.vscode
+.idea
