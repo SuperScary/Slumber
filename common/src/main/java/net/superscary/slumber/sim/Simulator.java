@@ -12,9 +12,15 @@ public class Simulator {
     private static boolean sleepingActive = false;
     private static int originalSleepingPercent = -1; // cached from the overworld when entering sleep mode
 
+    // Target duration (in real server ticks) to finish skipping night while still
+    // simulating world ticks so that all game logic progresses.
+    private static final int TARGET_SKIP_REAL_TICKS = 40; // ~2 seconds at 20 TPS
+
     /**
-     * Simulate extra world ticks when all players are sleeping, based on the
-     * SLUMBER_TICK_MULTIPLIER game rule.
+     * Simulate extra world ticks when all players are sleeping.
+     * Speeds up time so the night ends in roughly TARGET_SKIP_REAL_TICKS
+     * real server ticks (similar feel to vanilla), while still advancing
+     * the world via full ticks.
      */
     public static void simulateWorld() {
         final MinecraftServer server = Slumber.instance().getCurrentServer();
@@ -26,12 +32,12 @@ public class Simulator {
         if (allSleeping != sleepingActive) {
             sleepingActive = allSleeping;
             if (sleepingActive) {
-                Slumber.LOGGER.info("[Slumber] All players sleeping — accelerating world ticks.");
-                // Prevent vanilla night-skip by making the percentage unattainable
+                Slumber.LOGGER.info("All players sleeping - accelerating world ticks.");
+                // Prevent vanilla instant night-skip by making the percentage unattainable
                 originalSleepingPercent = getPlayersSleepingPercent(server.overworld());
                 setPlayersSleepingPercentAllLevels(server, 101);
             } else {
-                Slumber.LOGGER.info("[Slumber] Sleep ended — resuming normal tick rate.");
+                Slumber.LOGGER.info("Sleep ended - resuming normal tick rate.");
                 // Restore vanilla night-skip threshold
                 if (originalSleepingPercent >= 0) {
                     setPlayersSleepingPercentAllLevels(server, originalSleepingPercent);
@@ -43,57 +49,35 @@ public class Simulator {
         if (!sleepingActive)
             return;
 
-        // Determine multiplier from game rule. Minimum 1 (no acceleration).
-        int multiplier = Math.max(1,
-                server.overworld().getGameRules().getInt(SlumberGameRules.SLUMBER_TICK_MULTIPLIER));
-        int extraTicks = multiplier - 1;
+        // Determine how many world ticks to run this server tick so we complete
+        // the remaining night within the target duration, honoring the game rule
+        // as a minimum multiplier.
+        int remainingToMorning = ticksUntilNextMorning(server.overworld());
+        if (remainingToMorning <= 0) {
+            if (originalSleepingPercent >= 0) {
+                setPlayersSleepingPercentAllLevels(server, originalSleepingPercent);
+                originalSleepingPercent = -1;
+            }
+            return;
+        }
 
-        // Run extra full world ticks so that blocks, entities, schedulers, etc. all
-        // progress.
+        int ruleMultiplier = Math.max(1,
+                server.overworld().getGameRules().getInt(SlumberGameRules.SLUMBER_TICK_MULTIPLIER));
+        int floorExtra = ruleMultiplier - 1;
+        int desiredExtra = (int) Math.ceil(remainingToMorning / (double) TARGET_SKIP_REAL_TICKS);
+        int extraTicks = Math.max(floorExtra, desiredExtra);
+
+        // Run extra full world ticks so that blocks, entities, schedulers, etc. all progress.
         for (int i = 0; i < extraTicks; i++) {
             for (ServerLevel level : server.getAllLevels()) {
                 level.tick(() -> true);
             }
         }
 
-        // If it has become day in the overworld, allow vanilla to wake players by
-        // restoring the threshold.
-        if (server.overworld().getGameTime() >= server.overworld().getDayTime() && originalSleepingPercent >= 0) {
+        // If morning has arrived, restore vanilla threshold to allow waking.
+        if (ticksUntilNextMorning(server.overworld()) <= 0 && originalSleepingPercent >= 0) {
             setPlayersSleepingPercentAllLevels(server, originalSleepingPercent);
             originalSleepingPercent = -1;
-        }
-    }
-
-    /**
-     * Heal sleeping players by 1 health point (half a heart) each tick when all
-     * players are sleeping, if the HEAL_WHEN_SLEEPING game rule is enabled.
-     *
-     * * We should calculate healing time based on the player's actual sleep time and the time
-     * * it takes to heal naturally, this just adds 1 health per tick.
-     */
-    @Deprecated(since = "1.0.1+1.21.1")
-    public static void healWhenSleeping() {
-        final MinecraftServer server = Slumber.instance().getCurrentServer();
-        if (server == null)
-            return;
-
-        final boolean allSleeping = areAllNonSpectatorsSleeping(server);
-
-        if (!allSleeping)
-            return;
-
-        boolean healWhenSleeping = server.overworld().getGameRules().getBoolean(SlumberGameRules.HEAL_WHEN_SLEEPING);
-        boolean hungerWhenHealing = server.overworld().getGameRules().getBoolean(SlumberGameRules.HUNGER_WHEN_HEALING);
-        if (!healWhenSleeping)
-            return;
-
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player.isSleeping()) {
-                player.heal(1.0F);
-                // TODO: configurable hunger cost.
-                // ! This is experimental.
-                if (hungerWhenHealing) player.causeFoodExhaustion(0.005F);
-            }
         }
     }
 
@@ -120,4 +104,10 @@ public class Simulator {
         }
     }
 
+    private static int ticksUntilNextMorning(ServerLevel level) {
+        long dayTime = level.getDayTime() % 24000L;
+        if (dayTime == 0L) return 0;
+        return (int) (24000L - dayTime);
+    }
 }
+
