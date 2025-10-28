@@ -8,7 +8,6 @@ public class SlumberFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // Bootstrap platform-specific base based on environment
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             new SlumberFabricClient();
         } else {

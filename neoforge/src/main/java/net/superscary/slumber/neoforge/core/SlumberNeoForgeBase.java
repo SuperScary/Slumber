@@ -18,8 +18,7 @@ public abstract class SlumberNeoForgeBase extends ModBase {
         super();
         CommonClass.init();
 
-        SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules
-                .register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
+        SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules.register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
 
         NeoForge.EVENT_BUS.register(new PlayerSleepHook());
     }

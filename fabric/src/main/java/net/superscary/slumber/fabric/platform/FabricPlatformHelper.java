@@ -1,7 +1,7 @@
 package net.superscary.slumber.fabric.platform;
 
-import net.superscary.slumber.platform.services.IPlatformHelper;
 import net.fabricmc.loader.api.FabricLoader;
+import net.superscary.slumber.platform.services.IPlatformHelper;
 
 public class FabricPlatformHelper implements IPlatformHelper {
 
@@ -12,13 +12,11 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public boolean isModLoaded(String modId) {
-
         return FabricLoader.getInstance().isModLoaded(modId);
     }
 
     @Override
     public boolean isDevelopmentEnvironment() {
-
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 }

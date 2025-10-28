@@ -10,7 +10,7 @@ import net.superscary.slumber.Slumber;
 public class SlumberNeoForgeBootstrap {
 
     public SlumberNeoForgeBootstrap(ModContainer container, IEventBus modEventBus) {
-        switch (FMLEnvironment.dist) {
+        switch (FMLEnvironment.getDist()) {
             case CLIENT -> new SlumberNeoForgeClient(container, modEventBus);
             case DEDICATED_SERVER -> new SlumberNeoForgeServer(container, modEventBus);
         }

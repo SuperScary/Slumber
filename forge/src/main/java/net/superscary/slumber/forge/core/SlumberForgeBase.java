@@ -14,8 +14,7 @@ public abstract class SlumberForgeBase extends ModBase {
         super();
         CommonClass.init();
 
-        SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules
-                .register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
+        SlumberGameRules.SLUMBER_TICK_MULTIPLIER = GameRules.register("slumberTickMultiplier", GameRules.Category.UPDATES, GameRules.IntegerValue.create(20));
 
     }
 
